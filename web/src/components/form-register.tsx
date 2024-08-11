@@ -48,6 +48,40 @@ const schema = z
 
 type Inputs = z.infer<typeof schema>;
 
+type Field = {
+    label: string;
+    type: string;
+    id: string;
+    placeholder: string;
+};
+
+const regFields: Record<keyof Inputs, Field> = {
+    name: {
+        label: 'Name',
+        type: 'text',
+        id: 'name',
+        placeholder: 'Enter your name',
+    },
+    email: {
+        label: 'Email',
+        type: 'email',
+        id: 'email',
+        placeholder: 'Enter your email',
+    },
+    password: {
+        label: 'Password',
+        type: 'password',
+        id: 'password',
+        placeholder: 'Enter your password',
+    },
+    confirmPassword: {
+        label: 'Confirm password',
+        type: 'password',
+        id: 'confirm-password',
+        placeholder: 'Confirm your password',
+    },
+};
+
 export const RegisterForm: FC = () => {
     const {
         register,
@@ -68,25 +102,26 @@ export const RegisterForm: FC = () => {
     };
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <label htmlFor="name">Name</label>
-            <input type="text" id="name" {...register('name')} />
-            {<span className="error">{errors.name?.message}</span>}
+            {Object.entries(regFields).map(([key, field]) => {
+                const fieldKey = key as keyof Inputs;
 
-            <label htmlFor="email">Email</label>
-            <input type="email" id="email" {...register('email')} />
-            {<span className="error">{errors.email?.message}</span>}
-
-            <label htmlFor="password">Password</label>
-            <input type="password" id="password" {...register('password')} />
-            {<span className="error">{errors.password?.message}</span>}
-
-            <label htmlFor="confirm-password">Confirm password</label>
-            <input
-                type="password"
-                id="confirm-password"
-                {...register('confirmPassword')}
-            />
-            {<span className="error">{errors.confirmPassword?.message}</span>}
+                return (
+                    <div key={key} className="form-group">
+                        <label htmlFor={field.id}>{field.label}</label>
+                        <input
+                            type={field.type}
+                            id={field.id}
+                            placeholder="..."
+                            {...register(fieldKey)}
+                        />
+                        {errors[fieldKey] && (
+                            <span className="error">
+                                {errors[fieldKey]?.message}
+                            </span>
+                        )}
+                    </div>
+                );
+            })}
 
             <button type="submit">Submit</button>
         </form>
