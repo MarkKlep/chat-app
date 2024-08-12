@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,24 +82,50 @@ const regFields: Record<keyof Inputs, Field> = {
     },
 };
 
+const initRegForm = {
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+};
+
 export const RegisterForm: FC = () => {
+    const [submitted, setSubmitted] = useState(false);
+    const [progress, setProgress] = useState(0);
+
     const {
         register,
         handleSubmit,
         formState: { errors },
+        reset,
+        watch,
     } = useForm<Inputs>({
         resolver: zodResolver(schema),
-        defaultValues: {
-            name: '',
-            email: '',
-            password: '',
-        },
+        defaultValues: initRegForm,
         mode: 'onChange',
     });
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
+        setSubmitted(true);
+        reset(initRegForm);
         console.log(data);
     };
+
+    const fields: Inputs = watch();
+
+    useEffect(() => {
+        console.log('fields = ', fields);
+        const filledFields = Object.entries(fields).filter(
+            ([_, value]) => value.trim().length > 0
+        );
+
+        const fieldsCount = Object.keys(fields).length;
+        const filledFieldsCount = filledFields.length;
+
+        const currProgress = (filledFieldsCount / fieldsCount) * 100;
+        setProgress(currProgress);
+    }, [fields]);
+
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             {Object.entries(regFields).map(([key, field]) => {
@@ -123,7 +149,15 @@ export const RegisterForm: FC = () => {
                 );
             })}
 
+            <div className="progress-bar">
+                <div className="progress" style={{ width: `${progress}%` }} />
+            </div>
+
             <button type="submit">Submit</button>
+
+            {submitted && (
+                <p className="success">Form submitted successfully!</p>
+            )}
         </form>
     );
 };
