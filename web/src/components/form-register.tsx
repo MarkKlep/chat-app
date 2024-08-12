@@ -114,9 +114,11 @@ export const RegisterForm: FC = () => {
     const fields: Inputs = watch();
 
     useEffect(() => {
-        const filledFields = Object.entries(fields).filter(
-            ([_, value]) => value.trim().length > 0
-        );
+        const filledFields = Object.entries(fields).filter(([key, value]) => {
+            const fieldKey = key as keyof Inputs;
+
+            return value.trim().length > 0 && errors[fieldKey] === undefined;
+        });
 
         const fieldsCount = Object.keys(fields).length;
         const filledFieldsCount = filledFields.length;
