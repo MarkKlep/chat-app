@@ -114,7 +114,6 @@ export const RegisterForm: FC = () => {
     const fields: Inputs = watch();
 
     useEffect(() => {
-        console.log('fields = ', fields);
         const filledFields = Object.entries(fields).filter(
             ([_, value]) => value.trim().length > 0
         );
