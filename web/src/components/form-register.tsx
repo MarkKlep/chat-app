@@ -101,7 +101,6 @@ export const RegisterForm: FC = () => {
         watch,
     } = useForm<Inputs>({
         resolver: zodResolver(schema),
-        defaultValues: initRegForm,
         mode: 'onChange',
     });
 
@@ -125,7 +124,19 @@ export const RegisterForm: FC = () => {
 
         const currProgress = (filledFieldsCount / fieldsCount) * 100;
         setProgress(currProgress);
+
+        return () => {
+            console.log('regFormObj = ', fields);
+            sessionStorage.setItem('regFormObj', JSON.stringify(fields));
+        };
     }, [fields]);
+
+    useEffect(() => {
+        const regFormObj = sessionStorage.getItem('regFormObj');
+        const regFormState =
+            regFormObj === null ? initRegForm : JSON.parse(regFormObj);
+        reset(regFormState);
+    }, []);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
