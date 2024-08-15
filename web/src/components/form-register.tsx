@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import '../styles/form.scss';
 
+const URL = 'http://localhost:3001';
+
 const schema = z
     .object({
         name: z
@@ -89,14 +91,21 @@ const initRegForm = {
     confirmPassword: '',
 };
 
+type FormResponse = {
+    success: boolean;
+    errorMessage?: string;
+};
+
 export const RegisterForm: FC = () => {
-    const [submitted, setSubmitted] = useState(false);
+    const [serverResponse, setServerResponse] = useState<FormResponse | null>(
+        null
+    );
     const [progress, setProgress] = useState(0);
 
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isSubmitting },
         reset,
         watch,
     } = useForm<Inputs>({
@@ -104,10 +113,30 @@ export const RegisterForm: FC = () => {
         mode: 'onChange',
     });
 
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
-        setSubmitted(true);
-        reset(initRegForm);
-        console.log(data);
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        try {
+            const response = await fetch(URL + '/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Something went wrong');
+            }
+
+            setServerResponse({ success: true });
+        } catch (error) {
+            const errorMessage = (error as Error).message;
+
+            setServerResponse({ success: false, errorMessage });
+            console.error('Error: ' + errorMessage);
+        } finally {
+            reset(initRegForm);
+        }
     };
 
     const fields: Inputs = watch();
@@ -126,7 +155,6 @@ export const RegisterForm: FC = () => {
         setProgress(currProgress);
 
         return () => {
-            console.log('regFormObj = ', fields);
             sessionStorage.setItem('regFormObj', JSON.stringify(fields));
         };
     }, [fields]);
@@ -165,10 +193,16 @@ export const RegisterForm: FC = () => {
                 <div className="progress" style={{ width: `${progress}%` }} />
             </div>
 
-            <button type="submit">Submit</button>
+            <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Loading...' : 'Submit'}
+            </button>
 
-            {submitted && (
-                <p className="success">Form submitted successfully!</p>
+            {serverResponse && (
+                <div className={serverResponse.success ? 'success' : 'error'}>
+                    {serverResponse.success
+                        ? 'Registration successful!'
+                        : serverResponse.errorMessage}
+                </div>
             )}
         </form>
     );

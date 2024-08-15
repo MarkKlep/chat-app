@@ -25,17 +25,43 @@ form {
     }
 
     button[type='submit'] {
+        position: relative;
         margin-top: 20px;
         padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
+        background-color: white;
+        border-radius: 6px;
+        color: black;
+        border: 1px solid black;
+        overflow: hidden;
+        z-index: 1;
+        transition: color 1s 0.3s;
 
-        &:hover {
-            background-color: #0056b3;
+        &::before {
+            content: '';
+            width: 0;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #007bff;
+            z-index: -1;
+            transition: width 1s 0.3s;
+        }
+
+        &:not(:disabled):hover {
+            cursor: pointer;
+            color: white;
+            border-color: transparent;
+            transition: all 1s 0.3s;
+        }
+
+        &:not(:disabled):hover::before {
+            width: 100%;
+            transition: width 1s 0.3s;
+        }
+
+        &:disabled {
+            background-color: #e0e0e0;
         }
     }
 
